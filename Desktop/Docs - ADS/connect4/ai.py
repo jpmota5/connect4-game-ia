@@ -8,10 +8,52 @@ class BaseAI:
 
     def evaluate_board(self, board, piece):
         """
-        Avaliação simples para o estado do tabuleiro.
-        Pode ser melhorada para levar em conta alinhamentos parciais.
+        Avaliação do estado do tabuleiro baseada em padrões estratégicos:
+        - Alinhamentos de 2, 3 ou 4 peças.
+        - Bloqueios ao adversário.
         """
-        return np.random.randint(1, 10)
+        score = 0
+        opponent_piece = 3 - piece
+
+        # Padrões estratégicos: Avaliar alinhamentos
+        for row in range(board.rows):
+            for col in range(board.columns):
+                # Verificar alinhamentos horizontais, verticais e diagonais
+                if col + 3 < board.columns:  # Horizontal
+                    window = board.board[row, col:col + 4]
+                    score += self.score_window(window, piece, opponent_piece)
+                if row + 3 < board.rows:  # Vertical
+                    window = board.board[row:row + 4, col]
+                    score += self.score_window(window, piece, opponent_piece)
+                if col + 3 < board.columns and row + 3 < board.rows:  # Diagonal (↘)
+                    window = [board.board[row + i, col + i] for i in range(4)]
+                    score += self.score_window(window, piece, opponent_piece)
+                if col - 3 >= 0 and row + 3 < board.rows:  # Diagonal (↙)
+                    window = [board.board[row + i, col - i] for i in range(4)]
+                    score += self.score_window(window, piece, opponent_piece)
+
+        return score
+
+    def score_window(self, window, piece, opponent_piece):
+        """
+        Avalia uma janela específica (4 posições consecutivas) no tabuleiro.
+        """
+        score = 0
+        piece_count = np.count_nonzero(window == piece)  # Conta as peças do jogador
+        opponent_count = np.count_nonzero(window == opponent_piece)  # Conta as peças do oponente
+        empty_count = np.count_nonzero(window == 0)  # Conta os espaços vazios
+
+        if piece_count == 4:
+            score += 100  # Vitória garantida
+        elif piece_count == 3 and empty_count == 1:
+            score += 10  # Boa oportunidade de vitória
+        elif piece_count == 2 and empty_count == 2:
+            score += 5  # Potencial estratégico
+
+        if opponent_count == 3 and empty_count == 1:
+            score -= 80  # Bloquear o oponente é prioritário
+
+        return score
 
 class MinimaxAI(BaseAI):
     def minimax(self, board, depth, maximizing_player, piece):
@@ -31,7 +73,7 @@ class MinimaxAI(BaseAI):
 
         if maximizing_player:
             value = -math.inf
-            best_column = np.random.choice(valid_locations)
+            best_column = None
             for col in valid_locations:
                 row = board.get_next_open_row(col)
                 temp_board = Board(board.rows, board.columns)
@@ -45,7 +87,7 @@ class MinimaxAI(BaseAI):
             return best_column, value
         else:
             value = math.inf
-            best_column = np.random.choice(valid_locations)
+            best_column = None
             for col in valid_locations:
                 row = board.get_next_open_row(col)
                 temp_board = Board(board.rows, board.columns)
@@ -60,6 +102,7 @@ class MinimaxAI(BaseAI):
 
     def get_best_move(self, board, piece):
         return self.minimax(board, self.ply, True, piece)[0]
+
 
 class AlphaBetaAI(BaseAI):
     def alpha_beta(self, board, depth, alpha, beta, maximizing_player, piece):
@@ -79,7 +122,7 @@ class AlphaBetaAI(BaseAI):
 
         if maximizing_player:
             value = -math.inf
-            best_column = np.random.choice(valid_locations)
+            best_column = None
             for col in valid_locations:
                 row = board.get_next_open_row(col)
                 temp_board = Board(board.rows, board.columns)
@@ -96,7 +139,7 @@ class AlphaBetaAI(BaseAI):
             return best_column, value
         else:
             value = math.inf
-            best_column = np.random.choice(valid_locations)
+            best_column = None
             for col in valid_locations:
                 row = board.get_next_open_row(col)
                 temp_board = Board(board.rows, board.columns)

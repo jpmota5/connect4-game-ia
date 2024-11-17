@@ -1,5 +1,6 @@
 import pygame
 import sys
+import time  # Para adicionar o atraso
 from board import Board
 from ai import MinimaxAI, AlphaBetaAI
 from settings import TILE_SIZE, ROWS, COLUMNS, COLORS
@@ -109,9 +110,17 @@ def main():
                         game_over = True
 
                     turn = 1
+                    # Exibe a bola do jogador humano (vermelha) na tela
+                    board.draw(screen)
+                    pygame.display.update()
+
+                    # Atraso após a jogada do humano
+                    pygame.time.wait(500)  # Aguarda 500 milissegundos (meio segundo)
+
                 else:
                     print(f"Jogada inválida na coluna {col}")
 
+        # Agora a IA faz a jogada
         if turn == 1 and not game_over:
             print("Turno da IA...")
             col = ai.get_best_move(board, 2)
@@ -124,6 +133,9 @@ def main():
                     game_over = True
 
                 turn = 0
+                # Exibe a bola da IA (amarela) na tela
+                board.draw(screen)
+                pygame.display.update()
 
         board.draw(screen)
         pygame.display.update()
