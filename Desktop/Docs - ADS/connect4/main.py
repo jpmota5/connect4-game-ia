@@ -64,6 +64,51 @@ def show_menu(screen):
 
         clock.tick(30)
 
+def display_message(screen, message):
+    font = pygame.font.SysFont("Arial", 36)
+    pygame.draw.rect(screen, COLORS["BLACK"], (0, 0, screen.get_width(), TILE_SIZE))
+    text = font.render(message, True, (255, 255, 255))
+    screen.blit(text, (10, 10))
+    pygame.display.update()
+
+def show_game_over_menu(screen, winner):
+    pygame.font.init()
+    font = pygame.font.SysFont("Arial", 36)
+    clock = pygame.time.Clock()
+
+    while True:
+        screen.fill((0, 0, 0))
+
+        winner_text = font.render(f"{winner} venceu!", True, (255, 255, 255))
+        screen.blit(winner_text, (screen.get_width() // 2 - winner_text.get_width() // 2, 100))
+
+        menu_text = font.render("Voltar ao menu inicial", True, (255, 255, 255))
+        quit_text = font.render("Sair", True, (255, 255, 255))
+
+        menu_button = pygame.Rect(screen.get_width() // 2 - 150, 200, 300, 50)
+        quit_button = pygame.Rect(screen.get_width() // 2 - 150, 300, 300, 50)
+
+        pygame.draw.rect(screen, (0, 128, 255), menu_button)
+        pygame.draw.rect(screen, (255, 0, 0), quit_button)
+
+        screen.blit(menu_text, (menu_button.centerx - menu_text.get_width() // 2, menu_button.centery - menu_text.get_height() // 2))
+        screen.blit(quit_text, (quit_button.centerx - quit_text.get_width() // 2, quit_button.centery - quit_text.get_height() // 2))
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                if menu_button.collidepoint(mouse_pos):
+                    return "menu"
+                if quit_button.collidepoint(mouse_pos):
+                    pygame.quit()
+                    sys.exit()
+
+        clock.tick(30)
 
 def main():
     pygame.init()
@@ -83,6 +128,7 @@ def main():
     board = Board(ROWS, COLUMNS)
     game_over = False
     turn = 0
+    font = pygame.font.SysFont("Arial", 36)
 
     while not game_over:
         for event in pygame.event.get():
@@ -106,42 +152,39 @@ def main():
                     board.drop_piece(row, col, 1)
 
                     if board.check_victory(1):
-                        print("Jogador 1 venceu!")
+                        display_message(screen, "Jogador 1 venceu!")
                         game_over = True
+                        winner = "Jogador 1"
 
                     turn = 1
-                    # Exibe a bola do jogador humano (vermelha) na tela
                     board.draw(screen)
                     pygame.display.update()
+                    pygame.time.wait(500)
 
-                    # Atraso após a jogada do humano
-                    pygame.time.wait(500)  # Aguarda 500 milissegundos (meio segundo)
-
-                else:
-                    print(f"Jogada inválida na coluna {col}")
-
-        # Agora a IA faz a jogada
         if turn == 1 and not game_over:
-            print("Turno da IA...")
+            display_message(screen, "Vez da IA...")
             col = ai.get_best_move(board, 2)
             if board.is_valid_location(col):
                 row = board.get_next_open_row(col)
                 board.drop_piece(row, col, 2)
 
                 if board.check_victory(2):
-                    print("Jogador 2 (IA) venceu!")
+                    display_message(screen, "Jogador 2 venceu!")
                     game_over = True
+                    winner = "IA"
 
                 turn = 0
-                # Exibe a bola da IA (amarela) na tela
                 board.draw(screen)
                 pygame.display.update()
 
         board.draw(screen)
         pygame.display.update()
 
-    pygame.time.wait(3000)
-
+    if game_over:
+            pygame.time.wait(3000)
+            next_action = show_game_over_menu(screen, winner)
+            if next_action == "menu":
+                main()
 
 if __name__ == "__main__":
     main()
