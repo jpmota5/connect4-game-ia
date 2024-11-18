@@ -18,7 +18,7 @@ def show_menu(screen):
     while True:
         screen.fill((0, 0, 0))
 
-        title_text = font.render("Escolha o algoritmo", True, (255, 255, 255))
+        title_text = font.render("Escolha o algoritmo que deseja desafiar", True, (255, 255, 255))
         screen.blit(title_text, (screen.get_width() // 2 - title_text.get_width() // 2, 50))
 
         algo_buttons = []
@@ -33,14 +33,14 @@ def show_menu(screen):
 
         ply_buttons = []
         if selected_algorithm is not None:
-            ply_text = font.render("Escolha o nível do Ply", True, (255, 255, 255))
+            ply_text = font.render("Escolha o nível de dificuldade (Ply)", True, (255, 255, 255))
             screen.blit(ply_text, (screen.get_width() // 2 - ply_text.get_width() // 2, 350))
             for i, level in enumerate(ply_levels):
                 x, y = screen.get_width() // 2 - 100, 400 + i * 60
                 width, height = 200, 50
                 color = (0, 128, 255) if selected_ply != level else (0, 200, 100)
                 pygame.draw.rect(screen, color, (x, y, width, height))
-                text = font.render(f"Ply {level}", True, (255, 255, 255))
+                text = font.render(f"Nivel {level}", True, (255, 255, 255))
                 screen.blit(text, (x + width // 2 - text.get_width() // 2, y + height // 2 - text.get_height() // 2))
                 ply_buttons.append((x, y, width, height, level))
 
@@ -152,9 +152,9 @@ def main():
                     board.drop_piece(row, col, 1)
 
                     if board.check_victory(1):
-                        display_message(screen, "Jogador 1 venceu!")
+                        display_message(screen, "Você venceu!")
                         game_over = True
-                        winner = "Jogador 1"
+                        winner = "Você"
 
                     turn = 1
                     board.draw(screen)
@@ -169,7 +169,7 @@ def main():
                 board.drop_piece(row, col, 2)
 
                 if board.check_victory(2):
-                    display_message(screen, "Jogador 2 venceu!")
+                    display_message(screen, "IA venceu!")
                     game_over = True
                     winner = "IA"
 
