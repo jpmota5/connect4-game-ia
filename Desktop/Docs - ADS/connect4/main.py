@@ -1,6 +1,6 @@
 import pygame
 import sys
-import time  # Para adicionar o atraso
+import time  # Para calcular tempos
 from board import Board
 from ai import MinimaxAI, AlphaBetaAI
 from settings import TILE_SIZE, ROWS, COLUMNS, COLORS
@@ -71,7 +71,7 @@ def display_message(screen, message):
     screen.blit(text, (10, 10))
     pygame.display.update()
 
-def show_game_over_menu(screen, winner):
+def show_game_over_menu(screen, winner, elapsed_time):
     pygame.font.init()
     font = pygame.font.SysFont("Arial", 36)
     clock = pygame.time.Clock()
@@ -80,13 +80,16 @@ def show_game_over_menu(screen, winner):
         screen.fill((0, 0, 0))
 
         winner_text = font.render(f"{winner} venceu!", True, (255, 255, 255))
+        time_text = font.render(f"Duração: {elapsed_time:.2f} segundos", True, (255, 255, 255))
+
         screen.blit(winner_text, (screen.get_width() // 2 - winner_text.get_width() // 2, 100))
+        screen.blit(time_text, (screen.get_width() // 2 - time_text.get_width() // 2, 160))
 
         menu_text = font.render("Voltar ao menu inicial", True, (255, 255, 255))
         quit_text = font.render("Sair", True, (255, 255, 255))
 
-        menu_button = pygame.Rect(screen.get_width() // 2 - 150, 200, 300, 50)
-        quit_button = pygame.Rect(screen.get_width() // 2 - 150, 300, 300, 50)
+        menu_button = pygame.Rect(screen.get_width() // 2 - 150, 250, 300, 50)
+        quit_button = pygame.Rect(screen.get_width() // 2 - 150, 350, 300, 50)
 
         pygame.draw.rect(screen, (0, 128, 255), menu_button)
         pygame.draw.rect(screen, (255, 0, 0), quit_button)
@@ -130,6 +133,8 @@ def main():
     turn = 0
     font = pygame.font.SysFont("Arial", 36)
 
+    start_time = time.time()  # Início do cronômetro
+
     while not game_over:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -163,7 +168,14 @@ def main():
 
         if turn == 1 and not game_over:
             display_message(screen, "Vez da IA...")
+            
+            # Calcula o tempo para o movimento da IA
+            start_move_time = time.time()
             col = ai.get_best_move(board, 2)
+            end_move_time = time.time()
+            move_duration = end_move_time - start_move_time
+            print(f"Tempo de execução da IA: {move_duration:.4f} segundos")
+
             if board.is_valid_location(col):
                 row = board.get_next_open_row(col)
                 board.drop_piece(row, col, 2)
@@ -181,10 +193,11 @@ def main():
         pygame.display.update()
 
     if game_over:
-            pygame.time.wait(3000)
-            next_action = show_game_over_menu(screen, winner)
-            if next_action == "menu":
-                main()
+        elapsed_time = time.time() - start_time  # Calcula o tempo total
+        pygame.time.wait(3000)
+        next_action = show_game_over_menu(screen, winner, elapsed_time)
+        if next_action == "menu":
+            main()
 
 if __name__ == "__main__":
     main()
